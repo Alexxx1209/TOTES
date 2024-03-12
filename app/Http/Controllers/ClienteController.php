@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Cliente;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class ClienteController extends Controller
 {
@@ -91,5 +93,30 @@ class ClienteController extends Controller
 
         // Redireccionar a la lista de clientes con un mensaje de éxito
         return redirect()->route('clientes.index')->with('success', 'Cliente eliminado exitosamente.');
+    }
+    public function generatePDF()
+    {
+        // Obtener los datos de los clientes desde la base de datos
+        $clientes = Cliente::all();
+    
+        // Crear una instancia de Dompdf
+        $dompdf = new Dompdf();
+    
+        // Opcional: configura las opciones de Dompdf (por ejemplo, tamaño de papel, etc.)
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $dompdf->setOptions($options);
+    
+        // Renderiza la vista Blade en HTML
+        $html = view('informe_clientes_pdf', compact('clientes'))->render();
+    
+        // Carga el HTML generado en Dompdf
+        $dompdf->loadHtml($html);
+    
+        // Renderiza el PDF
+        $dompdf->render();
+    
+        // Descarga el PDF en el navegador
+        return $dompdf->stream('informe_clientes.pdf');
     }
 }
